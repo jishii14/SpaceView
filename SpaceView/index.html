@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Space View</title>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
+    <script src="handlebars-v4.0.5.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <style>
+      html, body {
+        height: 100%;
+        background-color: #f6f6f6;
+      }
+
+      #wrap {
+        min-height: 100%;
+      }
+
+      #main {
+        overflow:auto;
+        padding-bottom:150px; /* this needs to be bigger than footer height*/
+      }
+
+      #deadCenter {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 750%;
+        padding-top: 125px;
+      }
+
+      .lowerText {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 200%;
+        padding-top: 20px;
+      }
+
+      .centeredBtn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 750%;
+        padding-top: 25px;
+      }
+
+      .footer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: -150px; /* negative value of footer height */
+        height: 150px;
+        clear:both;
+        padding-top:90px;
+        color: #232224;
+}
+    </style>
+  </head>
+
+  <body>
+    <div id="wrap">
+  <div id="main" class="container clear-top">
+    <h1 id = "deadCenter"> Space View </h1>
+    <div class="lowerText"> Tell Me Somewhere Interesting </div>
+    <div class="centeredBtn">
+      <button type="submit" class="btn btn-primary btn-lg"> <i class="fa fa-microphone" aria-hidden="true"></i> </button>
+    </div>
+  </div>
+</div>
+<script>
+
+var fetchTracks = function (trackID, callback) {
+}
+
+// $.ajax({
+//   url: '//api.spotify.com/v1/tracks/' + trackID,
+//   success: function (response) {
+//       callback(response);
+//   }
+// });
+// };
+//
+// fetchTracks(22,  function (data) { alert(data.preview_url)});
+</script>
+<footer class="footer"> Created by: Jordan, Davis, Nauj | LA Hacks 2017 | April 2, 2017 </footer>
+  </body>
+</html>
