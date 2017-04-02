@@ -1,5 +1,5 @@
 # SpaceView
-Website that lets users seamlessly learn about NASA data with just one touch
+Website that lets children seamlessly learn about NASA data with just one touch
 
 Space View is an educational application that uses data from NASA's Earth and Mars Rover API's to allow users to develop an interest 
 in space exploration by viewing and hearing about some of their publicly-available data.  The application utilizes two 
