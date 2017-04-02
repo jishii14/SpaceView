@@ -2,79 +2,241 @@
 <html>
   <head>
     <title>Space View</title>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
     <link rel="stylesheet" href="bootstrap.min.css">
     <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
     <script src="handlebars-v4.0.5.js"></script>
-    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-    <style>
-      html, body {
-        height: 100%;
-        background-color: #f6f6f6;
-      }
-
-      #wrap {
-        min-height: 100%;
-      }
-
-      #main {
-        overflow:auto;
-        padding-bottom:150px; /* this needs to be bigger than footer height*/
-      }
-
-      #deadCenter {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 750%;
-        padding-top: 125px;
-      }
-
-      .lowerText {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 200%;
-        padding-top: 20px;
-      }
-
-      .centeredBtn {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 750%;
-        padding-top: 25px;
-      }
-
-      .footer {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: -150px; /* negative value of footer height */
-        height: 150px;
-        clear:both;
-        padding-top:90px;
-        color: #232224;
-}
-    </style>
+    <link rel="stylesheet" type="text/css" href="myStyles.css">
+    <script src="http://code.responsivevoice.org/responsivevoice.js"></script>
   </head>
 
   <body>
+    <!-- Modal -->
+      <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog">
+
+          <!-- Modal content-->
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+              <h4 class="modal-title">Modal Header</h4>
+            </div>
+            <div class="modal-body">
+              <p>Some text in the modal.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     <div id="wrap">
+       <div class="clockwise rotationthing"><div id="moon" onclick="reloadPage()" class="clockwise"></div><div class="crater one"></div> <div class="crater two"></div><div class="crater two" style="top:0;left:0;"></div> <div class="crater three"><div class="crater four"></div></div></div>
+
   <div id="main" class="container clear-top">
     <h1 id = "deadCenter"> Space View </h1>
-    <div class="lowerText"> Tell Me Somewhere Interesting </div>
+    <div id="lowerText"> Take Me Somewhere Interesting </div>
+    <img id = "currImage">
     <div class="centeredBtn">
-      <button type="submit" class="btn btn-primary btn-lg"> <i class="fa fa-microphone" aria-hidden="true"></i> </button>
+      <button type="submit" onclick="startDictation()" class="btn btn-primary btn-lg" id= "recordButton"> <i class="fa fa-microphone" aria-hidden="true"></i> </button>
     </div>
+    <p id="incomingText"> </p>
   </div>
 </div>
 <script>
+// GETTER METHODS
+  var apiKey = "flDDrtyn9WAyOcT67XvhRzcYimGW1XBsRi2qUEzp";
+  var sampleAddress = "13857 Cottonwood Avenue, Chino, CA";
+  var googleKey = "AIzaSyCNP9okcjEsoFzBGiDgvGIQZpLt4Tot1s8";
+  var lat = 1.5;
+  var long = 100.75;
+  var date = '2014-02-01';
+var fetchRoverImages = function (id, rover, callback) {
+  var num = Math.floor((Math.random() * 3));
+  var type = "";
+  if(num == 0)
+    type = "navcam";
+  else if(num == 1)
+    type = "fhaz";
+  else if(num == 2)
+    type = "nhaz";
+  else
+    if(rover.equals("curiosity"))
+      type = "chemcam";
+    else if(rover.equals("opportunity"))
+      type = "minites";
+    else
+      type = "fhaz";
+
+  $.ajax({
+    url: '//api.nasa.gov/mars-photos/api/v1/rovers/' + rover + '/photos?sol=1000&camera=' + type + '&api_key=' + id,
+    success: function (response) {
+      callback(response);
+    }
+  });
+};
+
+function callLongLat(googleKey, sampleAddress) {
+  fetchLongLatGeocoding(googleKey, sampleAddress, function(response) {
+    var ls = response.results;
+    fetchEarthImages(apiKey, ls[0].geometry.location.lng, ls[0].geometry.location.lat, date, function(response) {
+          var imgSrc = response.url;
+          var datething = response.date;
+          var img = document.getElementById("currImage");
+          img.src = imgSrc;
+          img.style.visibility = "visible";
+          img.className += "cutoff";
+          img.label = "Testing";
+          responsiveVoice.speak("This image was taken on " + datething, "UK English Female");
+          // window.setTimeout(promptModal, 3000);
+    });
+  });
+}
+
+var fetchEarthImages = function(id, lon, lat, date, callback) {
+  $.ajax({
+    url: '//api.nasa.gov/planetary/earth/imagery?lon=' + lon + '&lat=' + lat + '&date=' + date + '&cloud_score=True&api_key=' + id,
+    success: function(response) {
+      callback(response);
+    }
+  });
+}
+
+var fetchLongLatGeocoding = function(id, address, callback) {
+  $.ajax({
+    url: 'https://maps.googleapis.com/maps/api/geocode/json?address=' + encodeURI(address).replace(/%20/g, "+") + '&key=' + id,
+    crossDomain: true,
+    success: function(response) {
+      callback(response);
+    }
+  });
+}
+
+// DICTATION
+function startDictation() {
+  document.getElementById("incomingText").innerHTML = "";
+
+    if (window.hasOwnProperty('webkitSpeechRecognition')) {
+
+      var recognition = new webkitSpeechRecognition();
+
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.lang = "en-US";
+      recognition.start();
+
+      recognition.onresult = function(e) {
+        recognition.stop();
+        var result = e.results[0][0].transcript
+        document.getElementById("incomingText").innerHTML = result;
+        setTimeout(function foo() {}, 3000);
+        document.getElementById("incomingText").innerHTML = "";
+          $( "#deadCenter" ).fadeOut( "slow", function() {
+            // Animation complete.
+          });
+          $( "#lowerText" ).fadeOut( "slow", function() {
+          });
+          $('#recordButton').css({
+            position: 'absolute',
+        }).animate({bottom: 50});
+
+      parseInput(result)
+      };
+      recognition.onerror = function(e) {
+        recognition.stop();
+      }
+    }
+  }
+
+// PARSING INPUT TO FIND WHAT TO DO
+  function parseInput(result) {
+    var phrase = result.toLowerCase();
+
+    if(phrase.includes("mars") || phrase.includes("curiosity") || phrase.includes("opportunity") || phrase.includes("spirit")) {
+      if(phrase.includes("curiosity")) {
+        doMars("curiosity");
+      } else if(phrase.includes("opportunity")) {
+        doMars("opportunity");
+      } else if(phrase.includes("spirit")) {
+        doMars("spirit");
+      } else {
+        doMars("curiosity");
+      }
+    } else if(phrase.includes("earth") || phrase.includes("home")) {
+      var address = prompt("Please enter an address", "1111 Apple Street, Pomona, CA");
+      callLongLat(googleKey, address);
+    } else {
+      responsiveVoice.speak("Sorry, I don't seem to understand you.  Please repeat yourself and check the help page at the bottom.", "UK English Female");
+      reloadPage();
+    }
+  }
+
+// ENTRY METHODS
+  function doMars(rover) {
+    fetchRoverImages(apiKey, rover, function(response) {
+      var num = Math.floor((Math.random() * 3));
+      if(response.photos.length < 4)
+        num = 0;
+      var imgData = response.photos[num];
+      var imgSrc = imgData.img_src;
+      var roverName = rover;
+      var roverEntry = imgData.rover.launch_date;
+      var camera = imgData.camera.full_name;
+      var img = document.getElementById("currImage");
+      img.src = imgSrc;
+      img.style.visibility = "visible";
+      img.className += "rounded cutoff";
+      img.label = "Testing";
+      responsiveVoice.speak("This image was taken by the " + roverName + ", who's launch date was " + roverEntry + ", and it was taken with its " + camera, "UK English Female");
+    });
+  }
+
+  function doEarth() {};
+
+  var famousPlacesAddress = ['350 Fifth Avenue New York, NY', '221 B Baker St, London, England', '1600 Amphitheatre Parkway, Mountain View, CA', '4800 Oak Grove Dr, Pasadena, CA'];
+  var famousPlaces = ['The Empire State Building', 'Sherlock Holmes Museum', 'Google Headquarters', 'The Jet Propulsion Laboratory'];
+//
+// function promptModal() {
+//   jQuery.noConflict();
+//   jQuery('#myModal').modal('toggle');
+// }
+
+function reloadPage() {
+  location.reload();
+}
+
+function help() {
+  responsiveVoice.speak("We are currently hooked up to two of NASA's key data sets.  If you would like to view images of the three rovers, ask me by saying a rover's name. If you'd like to view a satellite image of earth, go ahead and tell me.", "UK English Female");
+}
+
+function loadImage() {
+
+
+
+  // fetchEarthImages(apiKey, long, lat, date, function(response) {
+  //     var imgSrc = response.url;
+  //     var img = document.getElementById("currImage");
+  //     img.src = imgSrc;
+  //     img.style.visibility = "visible";
+  //     img.className += "rounded cutoff";
+  //     img.label = "Testing";
+  // });
+
+
+}
+
+// $( "#recordButton" ).click(function() {
+// });
+
+
 
 var fetchTracks = function (trackID, callback) {
 }
 
 // $.ajax({
-//   url: '//api.spotify.com/v1/tracks/' + trackID,
+//   url: '//api.spotify.com/v1/trmacks/' + trackID,
 //   success: function (response) {
 //       callback(response);
 //   }
@@ -83,6 +245,6 @@ var fetchTracks = function (trackID, callback) {
 //
 // fetchTracks(22,  function (data) { alert(data.preview_url)});
 </script>
-<footer class="footer"> Created by: Jordan, Davis, Nauj | LA Hacks 2017 | April 2, 2017 </footer>
+<footer class="footer"> Created by: Jordan, Davis, Nauj | LA Hacks 2017 | April 2, 2017 |  <a href="javascript:void(0);" onclick="help()"> Help </a> </footer>
   </body>
 </html>
