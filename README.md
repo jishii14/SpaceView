@@ -6,4 +6,4 @@ in space exploration by viewing and hearing about some of their publicly-availab
 speech-to-text and text-to-speech API's in order to improve the overall user experience and make viewing NASA's world-class 
 images as easy as just saying a few words.
 
-Created at LA Hacks 2016 (24 hour coding event) by me, my brother, and a friend.
+Created at LA Hacks 2017 (24 hour coding event) by me and a few friends.
